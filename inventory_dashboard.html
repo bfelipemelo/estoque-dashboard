@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão Centralizada de Estoque</title>
+    <!-- Carrega o Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 p-4 sm:p-8">
+    <div id="app" class="max-w-7xl mx-auto">
+        <!-- Conteúdo será injetado pelo JavaScript -->
+    </div>
+
+    <script type="text/javascript">
+        // Dados Padrão (Hardcoded) - SIMULANDO O SEU CSV INICIAL
+        const defaultStockData = [
+            { id: 1, revenda: 1, sku: 'GS55553R2BRA', desc: 'ÓLEO 5W40 MOTOR MAXI PERFORMANCE', category: 'LUB', qtd_cont: 1800, qtd_disp: 1770, qtd_conf: 10, qtd_aloc: 5, qtd_orcad: 5, qtd_negoc: 10, demanda: 8173.67 }, 
+            { id: 2, revenda: 1, sku: '6EA061500', desc: 'TAPETE BORRACHA POLO / NIVUS', category: 'ACE', qtd_cont: 10, qtd_disp: 8, qtd_conf: 0, qtd_aloc: 0, qtd_orcad: 2, qtd_negoc: 0, demanda: 20.50 }, 
+            { id: 3, revenda: 1, sku: 'N10746301', desc: 'PARAFUSO DE APOIO DA UNIDADE DE COMANDO', category: 'PCM', qtd_cont: 20, qtd_disp: 20, qtd_conf: 0, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.00 },
+            { id: 4, revenda: 1, sku: 'V04010023AJ', desc: 'CÂMERA DE RÉ POLO - QUANTUM', category: 'ACE', qtd_cont: 4, qtd_disp: 3, qtd_conf: 1, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 9.83 }, 
+            { id: 5, revenda: 1, sku: 'WHT004899', desc: 'PARAFUSO RODA FERRO GOL/VOYAGE', category: 'PCM', qtd_cont: 25, qtd_disp: 21, qtd_conf: 4, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.50 },
+            { id: 6, revenda: 1, sku: '82273188', desc: 'PARAFUSO DA RODA DIANTEIRA', category: 'PCM', qtd_cont: 150, qtd_disp: 150, qtd_conf: 0, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.15 }, 
+            { id: 7, revenda: 1, sku: '1119530411', desc: 'LANTERNA TRASEIRA FUSCA', category: 'PCE', qtd_cont: 5, qtd_disp: 5, qtd_conf: 0, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.80 },
+            { id: 8, revenda: 2, sku: 'GS55553R2BRA', desc: 'ÓLEO 5W40 MOTOR MAXI PERFORMANCE', category: 'LUB', qtd_cont: 500, qtd_disp: 490, qtd_conf: 10, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 1142.33 },
+            { id: 9, revenda: 2, sku: 'GS55545M2BRA', desc: 'ÓLEO 0W30 MOTOR MAXI PERFORMANCE AMAROK', category: 'LUB', qtd_cont: 560, qtd_disp: 553, qtd_conf: 7, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 6.83 },
+            { id: 10, revenda: 2, sku: '5U0601155FZ31', desc: 'CALOTA 14 GOL VOYAGE 2017>', category: 'ACE', qtd_cont: 10, qtd_disp: 9, qtd_conf: 1, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.00 },
+            { id: 11, revenda: 2, sku: '377947561D', desc: 'INTERRUPTOR ALARME PORTA FOX/ GOL', category: 'ACE', qtd_cont: 150, qtd_disp: 141, qtd_conf: 9, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.50 },
+            { id: 12, revenda: 3, sku: 'WHT004899', desc: 'PARAFUSO RODA FERRO GOL/VOYAGE', category: 'PCM', qtd_cont: 30, qtd_disp: 21, qtd_conf: 9, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.50 },
+            { id: 13, revenda: 3, sku: 'V04010057AE7Q', desc: 'FRISO LATERAL POLO - PRATA SIRIUS', category: 'ACE', qtd_cont: 60, qtd_disp: 56, qtd_conf: 4, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.17 }, 
+            { id: 14, revenda: 3, sku: '1119530411', desc: 'LANTERNA TRASEIRA FUSCA', category: 'PCE', qtd_cont: 5, qtd_disp: 5, qtd_conf: 0, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.80 },
+        ];
+
+        const METRICS = [
+            { key: 'qtd_cont', label: 'Contábil', color: 'text-indigo-600' },
+            { key: 'qtd_disp', label: 'Disponível', color: 'text-green-600' },
+            { key: 'qtd_conf', label: 'Conferência', color: 'text-yellow-600' },
+            { key: 'qtd_orcad', label: 'Orçado', color: 'text-blue-600' },
+            { key: 'qtd_aloc', label: 'Alocado', color: 'text-red-600' },
+            { key: 'qtd_negoc', label: 'Negociação', color: 'text-purple-600' },
+        ];
+
+        // --- Variáveis de Estado (Simulação de React Hooks) ---
+        let currentStockData = defaultStockData;
+        let searchTerm = '';
+        let selectedCategory = 'All';
+        let showSuggestionsOnly = false;
+        let activeTab = 'details'; 
+
+        // --- Funções Auxiliares ---
+
+        const formatNumber = (value) => value ? value.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) : '0';
+        const formatDecimal = (value) => value ? value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00';
+        
+        const calculateCoverage = (available, demand) => {
+            if (demand <= 0.0) return '∞ (Estagnado)';
+            const coverage = available / demand;
+            return coverage < 1000 ? `${coverage.toFixed(2)} meses` : '> 1000 meses';
+        };
+
+        const generateMetricCard = (title, value, color) => `
+            <div class="p-4 bg-white rounded-xl shadow-md border border-gray-100 transition hover:shadow-lg">
+                <p class="text-sm font-medium text-gray-500">${title}</p>
+                <p class="text-3xl font-extrabold mt-1 ${color}">${formatNumber(value)}</p>
+            </div>
+        `;
+
+        // --- Lógica de Processamento e Renderização ---
+
+        function processData(data) {
+            const processedData = data.map(item => {
+                // Critério de Compra: Estoque Disponível é menor que 1.5 meses de Demanda Média
+                const safetyStockThreshold = item.demanda * 1.5; 
+                const needsPurchase = item.demanda > 0 && item.qtd_disp < safetyStockThreshold;
+                
+                let suggestion = 0;
+                if (needsPurchase) {
+                    // Meta: Sugerir a quantidade necessária para atingir 2 meses de cobertura
+                    suggestion = Math.ceil((item.demanda * 2) - item.qtd_disp);
+                    if (suggestion < 0) suggestion = 0; 
+                }
+                
+                return {
+                    ...item,
+                    is_low_stock: needsPurchase,
+                    suggestion: suggestion > 0 ? suggestion : null,
+                };
+            });
+
+            // Agregação de Totais Globais
+            const globalTotals = processedData.reduce((acc, item) => {
+                METRICS.forEach(m => acc[m.key] = (acc[m.key] || 0) + item[m.key]);
+                acc.demanda = (acc.demanda || 0) + item.demanda;
+                return acc;
+            }, {});
+
+            // Agregação por Revenda
+            const revendaMap = processedData.reduce((acc, item) => {
+                acc[item.revenda] = acc[item.revenda] || { revenda: item.revenda };
+                METRICS.forEach(m => acc[item.revenda][m.key] = (acc[item.revenda][m.key] || 0) + item[m.key]);
+                acc[item.revenda].demanda = (acc[item.revenda].demanda || 0) + item.demanda;
+                return acc;
+            }, {});
+            const revendaTotals = Object.values(revendaMap).sort((a, b) => a.revenda - b.revenda);
+
+            // Categorias Únicas
+            const categories = [...new Set(data.map(item => item.category))].sort();
+
+            // Itens sugeridos
+            const suggestedItems = processedData.filter(item => item.suggestion > 0);
+
+            return { processedData, globalTotals, revendaTotals, categories, suggestedItems };
+        }
+
+        function filterAndSortItems(processedData) {
+            let filteredItems = processedData;
+
+            // Filtro por Categoria
+            if (selectedCategory !== 'All') {
+                filteredItems = filteredItems.filter(item => item.category === selectedCategory);
+            }
+
+            // Filtro por termo de busca (SKU ou Descrição)
+            if (searchTerm) {
+                const lowerCaseSearch = searchTerm.toLowerCase();
+                filteredItems = filteredItems.filter(item =>
+                    item.sku.toLowerCase().includes(lowerCaseSearch) ||
+                    item.desc.toLowerCase().includes(lowerCaseSearch)
+                );
+            }
+
+            // Filtro de Sugestão (apenas para a aba de detalhes, se ativo)
+            if (activeTab === 'details' && showSuggestionsOnly) {
+                filteredItems = filteredItems.filter(item => item.is_low_stock);
+            }
+
+            return filteredItems;
+        }
+
+        // --- Renderização de Componentes HTML ---
+
+        function renderGlobalTotals(totals) {
+            let html = '';
+            METRICS.forEach(m => {
+                html += generateMetricCard(m.label, totals[m.key] || 0, m.color);
+            });
+            html += generateMetricCard("Demanda Média Total", Math.round(totals.demanda || 0), "text-pink-600");
+
+            document.getElementById('global-totals').innerHTML = `
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Estoque Total Consolidado</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-8">
+                    ${html}
+                </div>
+            `;
+        }
+
+        function renderRevendaTotals(revendaTotals) {
+            const tbodyContent = revendaTotals.map(total => `
+                <tr class="hover:bg-indigo-50">
+                    <td class="px-4 py-3 whitespace-nowrap text-sm font-extrabold text-indigo-700">
+                        Revenda ${total.revenda}
+                    </td>
+                    ${METRICS.map(m => `
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-center font-semibold text-gray-800">
+                            ${formatNumber(total[m.key] || 0)}
+                        </td>
+                    `).join('')}
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-center font-semibold text-pink-700">
+                        ${formatNumber(Math.round(total.demanda || 0))}
+                    </td>
+                </tr>
+            `).join('');
+
+            document.getElementById('revenda-totals-container').innerHTML = `
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Totais Agregados por Revenda</h2>
+                <div class="overflow-x-auto bg-white rounded-xl shadow-lg">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Revenda</th>
+                                ${METRICS.map(m => `<th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">${m.label}</th>`).join('')}
+                                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Demanda Média</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            ${tbodyContent}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function renderItemTable(data, containerId, showSuggestions = false) {
+            const tableData = showSuggestions ? data.filter(item => item.suggestion) : data;
+
+            const tbodyContent = tableData.map(item => {
+                const isSuggested = item.suggestion;
+                
+                return `
+                    <tr class="${isSuggested ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-gray-50'}">
+                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                            <div class="font-bold">${item.sku}</div>
+                            <div class="text-gray-500 text-xs truncate max-w-xs">${item.desc}</div>
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-center text-gray-500">${item.revenda}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-xs text-center font-semibold text-gray-700">${item.category}</td>
+                        ${METRICS.map(m => `
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-center font-bold ${isSuggested && (m.key === 'qtd_disp') ? 'text-red-700' : 'text-gray-800'}">
+                                ${formatNumber(item[m.key])}
+                            </td>
+                        `).join('')}
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-center text-gray-700">${formatDecimal(item.demanda)}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-center text-gray-700">
+                            ${calculateCoverage(item.qtd_disp, item.demanda)}
+                        </td>
+                        ${showSuggestions ? `
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-center font-extrabold text-red-600">
+                                ${formatNumber(item.suggestion)}
+                            </td>
+                        ` : ''}
+                    </tr>
+                `;
+            }).join('');
+
+            const tableHtml = `
+                <div class="overflow-x-auto bg-white rounded-xl shadow-lg mt-4">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU / Descrição</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Revenda</th>
+                                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Cat.</th>
+                                ${METRICS.map(m => `<th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">${m.label}</th>`).join('')}
+                                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Demanda Média</th>
+                                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Cobertura</th>
+                                ${showSuggestions ? `<th class="px-4 py-2 text-center text-xs font-medium text-red-500 uppercase tracking-wider">Comprar Qtd.</th>` : ''}
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            ${tbodyContent}
+                        </tbody>
+                    </table>
+                    ${tableData.length === 0 ? '<div class="text-center p-8 text-gray-500">Nenhum item encontrado.</div>' : ''}
+                </div>
+            `;
+
+            document.getElementById(containerId).innerHTML = tableHtml;
+        }
+
+
+        // --- Função Principal de Renderização ---
+
+        function renderApp() {
+            const { processedData, globalTotals, revendaTotals, categories, suggestedItems } = processData(currentStockData);
+            const filteredItems = filterAndSortItems(processedData);
+
+            let appContent = `
+                <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-6 border-b pb-2">
+                    Gestão Centralizada de Estoque
+                </h1>
+                <p class="text-gray-600 mb-8">
+                    Visão diária consolidada das quantidades e sugestões de abastecimento.
+                </p>
+
+                <!-- 1. Totais Globais (Consolidado) -->
+                <div id="global-totals"></div>
+
+                <!-- 2. Abas de Visualização -->
+                <div class="flex space-x-2 border-b border-gray-200 mb-6">
+                    <button id="tab-details" onclick="setActiveTab('details')" 
+                        class="px-4 py-2 text-sm font-medium rounded-t-lg transition duration-150 
+                        ${activeTab === 'details' ? 'bg-white border-t border-x border-gray-200 text-indigo-700' : 'text-gray-500 hover:bg-gray-100'}">
+                        Detalhes do Item e Revendas
+                    </button>
+                    <button id="tab-suggestions" onclick="setActiveTab('suggestions')" 
+                        class="px-4 py-2 text-sm font-medium rounded-t-lg transition duration-150 
+                        ${activeTab === 'suggestions' ? 'bg-white border-t border-x border-gray-200 text-red-700' : 'text-gray-500 hover:bg-gray-100'}">
+                        Sugestão de Compras (${suggestedItems.length})
+                    </button>
+                </div>
+
+                <!-- 3. Conteúdo da Aba -->
+                <div id="tab-content"></div>
+
+                <!-- 4. Totais por Revenda -->
+                <div id="revenda-totals-container" class="mt-12"></div>
+
+                <footer class="mt-12 text-center text-sm text-gray-500">
+                    Sistema de Gestão de Estoque - Solução Gratuita (HTML).
+                </footer>
+            `;
+
+            document.getElementById('app').innerHTML = appContent;
+
+            // Renderiza o conteúdo principal
+            renderGlobalTotals(globalTotals);
+            renderRevendaTotals(revendaTotals);
+            renderTabContent(filteredItems, suggestedItems, categories);
+            
+            // Re-bind listeners para inputs
+            document.getElementById('search-input')?.addEventListener('input', handleSearchChange);
+            document.getElementById('category-select')?.addEventListener('change', handleCategoryChange);
+            document.getElementById('suggestions-toggle')?.addEventListener('change', handleToggleChange);
+            document.getElementById('update-button')?.addEventListener('click', handleUpdateClick);
+        }
+
+        function renderTabContent(filteredItems, suggestedItems, categories) {
+            const tabContentDiv = document.getElementById('tab-content');
+            
+            if (activeTab === 'details') {
+                tabContentDiv.innerHTML = `
+                    <!-- Bloco de Filtros e Busca para Detalhes -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg mb-8 border-t-2 border-indigo-300">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <!-- Filtro por Categoria -->
+                            <div>
+                                <label for="category-select" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Filtrar por Categoria
+                                </label>
+                                <select id="category-select" value="${selectedCategory}" class="w-full p-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                    <option value="All">Todas as Categorias</option>
+                                    ${categories.map(c => `<option value="${c}" ${selectedCategory === c ? 'selected' : ''}>${c}</option>`).join('')}
+                                </select>
+                            </div>
+
+                            <!-- Busca por SKU/Descrição -->
+                            <div class="md:col-span-2">
+                                <label for="search-input" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Buscar por SKU ou Descrição
+                                </label>
+                                <input type="text" id="search-input" value="${searchTerm}" placeholder="Ex: GS55553R2BRA ou TAPETE"
+                                    class="w-full p-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                />
+                            </div>
+
+                            <!-- Toggle Sugestão -->
+                            <div class="flex items-center pt-5">
+                                <input type="checkbox" id="suggestions-toggle" ${showSuggestionsOnly ? 'checked' : ''}
+                                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                                />
+                                <label for="suggestions-toggle" class="ml-2 block text-sm font-medium text-gray-700">
+                                    Mostrar APENAS Sugestões de Compra
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Componente de Atualização Manual -->
+                    <div id="data-updater-container"></div>
+                    
+                    <!-- Tabela de Itens Detalhada -->
+                    <h3 class="text-xl font-bold text-gray-800 mb-3 mt-8">Itens (${filteredItems.length})</h3>
+                    <div id="item-table-details"></div>
+                `;
+                
+                renderDataUpdater(currentStockData);
+                renderItemTable(filteredItems, 'item-table-details', false);
+
+            } else if (activeTab === 'suggestions') {
+                tabContentDiv.innerHTML = `
+                    <div class="p-6 rounded-xl shadow-lg mb-8 border-t-2 border-red-500 bg-white">
+                        <h3 class="text-xl font-bold text-red-700 mb-3">
+                            Itens Prioritários para Compra - Abastecer Agora (${suggestedItems.length})
+                        </h3>
+                        <p class="text-sm text-gray-600">
+                            **Critério:** Estoque Disponível é menor que 1.5 meses da Demanda Média. A sugestão é comprar o suficiente para atingir 2 meses de cobertura.
+                        </p>
+                    </div>
+                    <div id="item-table-suggestions"></div>
+                `;
+                renderItemTable(suggestedItems, 'item-table-suggestions', true);
+            }
+        }
+
+        function renderDataUpdater(initialData) {
+            const container = document.getElementById('data-updater-container');
+            const defaultJson = JSON.stringify(initialData, null, 2);
+            
+            container.innerHTML = `
+                <div class="mt-8 p-6 bg-yellow-50 rounded-xl shadow-lg border-t-2 border-yellow-500">
+                    <h3 class="text-xl font-bold text-yellow-800 mb-3">
+                        Atualização Manual de Estoque (JSON)
+                    </h3>
+                    <p class="text-sm text-gray-700 mb-4">
+                        1. Exporte os dados atuais do seu sistema para CSV.<br>
+                        2. Converta o CSV para um array JSON no formato correto (o formato de exemplo está na caixa abaixo).<br>
+                        3. Cole o JSON atualizado e clique em "Atualizar Estoque".
+                    </p>
+                    <textarea id="json-input" rows="10" class="w-full p-2 border border-yellow-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500 text-xs font-mono">${defaultJson}</textarea>
+                    <p id="json-error" class="text-sm text-red-600 mt-2 font-semibold"></p>
+                    <button id="update-button" class="mt-3 w-full px-4 py-2 bg-yellow-600 text-white font-semibold rounded-lg shadow-md hover:bg-yellow-700 transition duration-150">
+                        Atualizar Estoque
+                    </button>
+                </div>
+            `;
+            
+            // Inicializa o listener do botão de atualização
+            document.getElementById('update-button').addEventListener('click', handleUpdateClick);
+        }
+
+        // --- Handlers de Eventos ---
+
+        function handleSearchChange(e) {
+            searchTerm = e.target.value;
+            renderApp();
+        }
+
+        function handleCategoryChange(e) {
+            selectedCategory = e.target.value;
+            renderApp();
+        }
+        
+        function handleToggleChange(e) {
+            showSuggestionsOnly = e.target.checked;
+            renderApp();
+        }
+
+        function setActiveTab(tab) {
+            activeTab = tab;
+            renderApp();
+        }
+
+        function handleUpdateClick() {
+            const jsonInput = document.getElementById('json-input').value;
+            const errorElement = document.getElementById('json-error');
+            errorElement.textContent = '';
+
+            try {
+                const newStockData = JSON.parse(jsonInput);
+                if (!Array.isArray(newStockData) || newStockData.length === 0 || !newStockData[0].sku) {
+                    throw new Error("O formato JSON deve ser um array não vazio de objetos com a chave 'sku'.");
+                }
+                
+                // Sucesso: Atualiza o estado global
+                currentStockData = newStockData;
+                renderApp();
+
+                // Mensagem de sucesso temporária
+                errorElement.textContent = "Estoque atualizado com sucesso!";
+                errorElement.classList.remove('text-red-600');
+                errorElement.classList.add('text-green-600');
+                setTimeout(() => errorElement.textContent = '', 3000);
+                
+            } catch (e) {
+                errorElement.textContent = `Erro ao processar JSON: ${e.message}. Verifique a sintaxe.`;
+                errorElement.classList.remove('text-green-600');
+                errorElement.classList.add('text-red-600');
+            }
+        }
+
+        // --- Inicialização ---
+        window.onload = renderApp;
+    </script>
+</body>
+</html>
