@@ -17,23 +17,36 @@
     </div>
 
     <script type="text/javascript">
-        // Dados Padrão (Hardcoded) - SIMULANDO O SEU CSV INICIAL
+        // Chaves para salvar os dados no LocalStorage
+        const STORAGE_KEY = 'inventoryData'; 
+        const ORDERS_KEY = 'pendingOrdersData';
+
+        // --- DADOS DE ESTOQUE (Com Curva ABC/XYZ Adicionada para Transferências) ---
         const defaultStockData = [
-            { id: 1, revenda: 1, sku: 'GS55553R2BRA', desc: 'ÓLEO 5W40 MOTOR MAXI PERFORMANCE', category: 'LUB', qtd_cont: 1800, qtd_disp: 1770, qtd_conf: 10, qtd_aloc: 5, qtd_orcad: 5, qtd_negoc: 10, demanda: 8173.67 }, 
-            { id: 2, revenda: 1, sku: '6EA061500', desc: 'TAPETE BORRACHA POLO / NIVUS', category: 'ACE', qtd_cont: 10, qtd_disp: 8, qtd_conf: 0, qtd_aloc: 0, qtd_orcad: 2, qtd_negoc: 0, demanda: 20.50 }, 
-            { id: 3, revenda: 1, sku: 'N10746301', desc: 'PARAFUSO DE APOIO DA UNIDADE DE COMANDO', category: 'PCM', qtd_cont: 20, qtd_disp: 20, qtd_conf: 0, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.00 },
-            { id: 4, revenda: 1, sku: 'V04010023AJ', desc: 'CÂMERA DE RÉ POLO - QUANTUM', category: 'ACE', qtd_cont: 4, qtd_disp: 3, qtd_conf: 1, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 9.83 }, 
-            { id: 5, revenda: 1, sku: 'WHT004899', desc: 'PARAFUSO RODA FERRO GOL/VOYAGE', category: 'PCM', qtd_cont: 25, qtd_disp: 21, qtd_conf: 4, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.50 },
-            { id: 6, revenda: 1, sku: '82273188', desc: 'PARAFUSO DA RODA DIANTEIRA', category: 'PCM', qtd_cont: 150, qtd_disp: 150, qtd_conf: 0, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.15 }, 
-            { id: 7, revenda: 1, sku: '1119530411', desc: 'LANTERNA TRASEIRA FUSCA', category: 'PCE', qtd_cont: 5, qtd_disp: 5, qtd_conf: 0, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.80 },
-            { id: 8, revenda: 2, sku: 'GS55553R2BRA', desc: 'ÓLEO 5W40 MOTOR MAXI PERFORMANCE', category: 'LUB', qtd_cont: 500, qtd_disp: 490, qtd_conf: 10, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 1142.33 },
-            { id: 9, revenda: 2, sku: 'GS55545M2BRA', desc: 'ÓLEO 0W30 MOTOR MAXI PERFORMANCE AMAROK', category: 'LUB', qtd_cont: 560, qtd_disp: 553, qtd_conf: 7, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 6.83 },
-            { id: 10, revenda: 2, sku: '5U0601155FZ31', desc: 'CALOTA 14 GOL VOYAGE 2017>', category: 'ACE', qtd_cont: 10, qtd_disp: 9, qtd_conf: 1, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.00 },
-            { id: 11, revenda: 2, sku: '377947561D', desc: 'INTERRUPTOR ALARME PORTA FOX/ GOL', category: 'ACE', qtd_cont: 150, qtd_disp: 141, qtd_conf: 9, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.50 },
-            { id: 12, revenda: 3, sku: 'WHT004899', desc: 'PARAFUSO RODA FERRO GOL/VOYAGE', category: 'PCM', qtd_cont: 30, qtd_disp: 21, qtd_conf: 9, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.50 },
-            { id: 13, revenda: 3, sku: 'V04010057AE7Q', desc: 'FRISO LATERAL POLO - PRATA SIRIUS', category: 'ACE', qtd_cont: 60, qtd_disp: 56, qtd_conf: 4, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.17 }, 
-            { id: 14, revenda: 3, sku: '1119530411', desc: 'LANTERNA TRASEIRA FUSCA', category: 'PCE', qtd_cont: 5, qtd_disp: 5, qtd_conf: 0, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.80 },
+            { id: 1, revenda: 1, sku: 'GS55553R2BRA', desc: 'ÓLEO 5W40 MOTOR MAXI PERFORMANCE', category: 'LUB', qtd_cont: 1800, qtd_disp: 1770, qtd_conf: 10, qtd_aloc: 5, qtd_orcad: 5, qtd_negoc: 10, demanda: 8173.67, curve: 'A-1' }, 
+            { id: 2, revenda: 1, sku: '6EA061500', desc: 'TAPETE BORRACHA POLO / NIVUS', category: 'ACE', qtd_cont: 10, qtd_disp: 8, qtd_conf: 0, qtd_aloc: 0, qtd_orcad: 2, qtd_negoc: 0, demanda: 20.50, curve: 'A-2' }, 
+            { id: 3, revenda: 1, sku: 'N10746301', desc: 'PARAFUSO DE APOIO', category: 'PCM', qtd_cont: 20, qtd_disp: 20, qtd_conf: 0, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.00, curve: 'C-3' },
+            { id: 4, revenda: 1, sku: 'V04010023AJ', desc: 'CÂMERA DE RÉ POLO - QUANTUM', category: 'ACE', qtd_cont: 4, qtd_disp: 3, qtd_conf: 1, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 9.83, curve: 'A-1' }, 
+            { id: 5, revenda: 1, sku: 'WHT004899', desc: 'PARAFUSO RODA FERRO', category: 'PCM', qtd_cont: 25, qtd_disp: 21, qtd_conf: 4, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.50, curve: 'B-2' },
+            { id: 6, revenda: 1, sku: '82273188', desc: 'PARAFUSO DA RODA DIANTEIRA', category: 'PCM', qtd_cont: 150, qtd_disp: 150, qtd_conf: 0, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.15, curve: 'B-3' }, 
+            { id: 7, revenda: 1, sku: '1119530411', desc: 'LANTERNA TRASEIRA FUSCA', category: 'PCE', qtd_cont: 5, qtd_disp: 5, qtd_conf: 0, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.80, curve: 'C-1' },
+            { id: 8, revenda: 2, sku: 'GS55553R2BRA', desc: 'ÓLEO 5W40 MOTOR MAXI PERFORMANCE', category: 'LUB', qtd_cont: 500, qtd_disp: 490, qtd_conf: 10, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 1142.33, curve: 'A-1' },
+            { id: 9, revenda: 2, sku: 'GS55545M2BRA', desc: 'ÓLEO 0W30 MOTOR MAXI PERFORMANCE AMAROK', category: 'LUB', qtd_cont: 560, qtd_disp: 553, qtd_conf: 7, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 6.83, curve: 'B-1' },
+            { id: 10, revenda: 2, sku: '5U0601155FZ31', desc: 'CALOTA 14 GOL VOYAGE 2017>', category: 'ACE', qtd_cont: 10, qtd_disp: 9, qtd_conf: 1, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.00, curve: 'C-3' },
+            { id: 11, revenda: 2, sku: '377947561D', desc: 'INTERRUPTOR ALARME PORTA FOX/ GOL', category: 'ACE', qtd_cont: 150, qtd_disp: 141, qtd_conf: 9, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.50, curve: 'B-3' },
+            { id: 12, revenda: 3, sku: 'WHT004899', desc: 'PARAFUSO RODA FERRO GOL/VOYAGE', category: 'PCM', qtd_cont: 30, qtd_disp: 21, qtd_conf: 9, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.50, curve: 'B-2' },
+            { id: 13, revenda: 3, sku: 'V04010057AE7Q', desc: 'FRISO LATERAL POLO - PRATA SIRIUS', category: 'ACE', qtd_cont: 60, qtd_disp: 56, qtd_conf: 4, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.17, curve: 'C-2' }, 
+            { id: 14, revenda: 3, sku: '1119530411', desc: 'LANTERNA TRASEIRA FUSCA', category: 'PCE', qtd_cont: 5, qtd_disp: 5, qtd_conf: 0, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.80, curve: 'C-1' },
+            { id: 15, revenda: 3, sku: '82273188', desc: 'PARAFUSO DA RODA DIANTEIRA', category: 'PCM', qtd_cont: 10, qtd_disp: 10, qtd_conf: 0, qtd_aloc: 0, qtd_orcad: 0, qtd_negoc: 0, demanda: 0.15, curve: 'B-3' }, 
         ];
+
+        // --- DADOS DE PEDIDOS EM ANDAMENTO (Novo) ---
+        const defaultPendingOrders = [
+            { id: 101, sku: 'GS55553R2BRA', desc: 'ÓLEO 5W40 MOTOR MAXI PERFORMANCE', qtd_pedida: 5000, fornecedor: 'Shell Brasil', status: 'Em Trânsito', previsao: '25/10/2025' },
+            { id: 102, sku: '6EA061500', desc: 'TAPETE BORRACHA POLO / NIVUS', qtd_pedida: 50, fornecedor: 'Acessórios SP', status: 'Processando', previsao: '05/11/2025' },
+            { id: 103, sku: 'V04010023AJ', desc: 'CÂMERA DE RÉ POLO - QUANTUM', qtd_pedida: 20, fornecedor: 'Quantum Tech', status: 'Aguardando Faturamento', previsao: '28/10/2025' },
+        ];
+
 
         const METRICS = [
             { key: 'qtd_cont', label: 'Contábil', color: 'text-indigo-600' },
@@ -45,21 +58,52 @@
         ];
 
         // --- Variáveis de Estado (Simulação de React Hooks) ---
-        let currentStockData = defaultStockData;
+        let currentStockData = []; 
+        let currentPendingOrders = [];
         let searchTerm = '';
         let selectedCategory = 'All';
         let showSuggestionsOnly = false;
         let activeTab = 'details'; 
 
-        // --- Funções Auxiliares ---
+        // --- Funções de Persistência (Local Storage) ---
+
+        function loadStockData() {
+            try {
+                const storedData = localStorage.getItem(STORAGE_KEY);
+                const storedOrders = localStorage.getItem(ORDERS_KEY);
+                
+                currentStockData = storedData ? JSON.parse(storedData) : defaultStockData;
+                currentPendingOrders = storedOrders ? JSON.parse(storedOrders) : defaultPendingOrders;
+                
+            } catch (e) {
+                console.error("Erro ao carregar dados do localStorage, usando dados padrões:", e);
+                currentStockData = defaultStockData;
+                currentPendingOrders = defaultPendingOrders;
+            }
+        }
+
+        function saveStockData(stockData, ordersData) {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(stockData));
+                localStorage.setItem(ORDERS_KEY, JSON.stringify(ordersData));
+            } catch (e) {
+                console.error("Erro ao salvar dados no localStorage:", e);
+            }
+        }
+
+        // --- Funções Auxiliares (Formatação) ---
 
         const formatNumber = (value) => value ? value.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) : '0';
         const formatDecimal = (value) => value ? value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00';
         
         const calculateCoverage = (available, demand) => {
-            if (demand <= 0.0) return '∞ (Estagnado)';
-            const coverage = available / demand;
-            return coverage < 1000 ? `${coverage.toFixed(2)} meses` : '> 1000 meses';
+            if (demand <= 0.0) return Infinity; // Usar Infinity para cálculos de transferência
+            return available / demand;
+        };
+        
+        const formatCoverage = (coverageValue) => {
+            if (coverageValue === Infinity) return '∞ (Estagnado)';
+            return coverageValue < 1000 ? `${coverageValue.toFixed(2)} meses` : '> 1000 meses';
         };
 
         const generateMetricCard = (title, value, color) => `
@@ -69,79 +113,7 @@
             </div>
         `;
 
-        // --- Lógica de Processamento e Renderização ---
-
-        function processData(data) {
-            const processedData = data.map(item => {
-                // Critério de Compra: Estoque Disponível é menor que 1.5 meses de Demanda Média
-                const safetyStockThreshold = item.demanda * 1.5; 
-                const needsPurchase = item.demanda > 0 && item.qtd_disp < safetyStockThreshold;
-                
-                let suggestion = 0;
-                if (needsPurchase) {
-                    // Meta: Sugerir a quantidade necessária para atingir 2 meses de cobertura
-                    suggestion = Math.ceil((item.demanda * 2) - item.qtd_disp);
-                    if (suggestion < 0) suggestion = 0; 
-                }
-                
-                return {
-                    ...item,
-                    is_low_stock: needsPurchase,
-                    suggestion: suggestion > 0 ? suggestion : null,
-                };
-            });
-
-            // Agregação de Totais Globais
-            const globalTotals = processedData.reduce((acc, item) => {
-                METRICS.forEach(m => acc[m.key] = (acc[m.key] || 0) + item[m.key]);
-                acc.demanda = (acc.demanda || 0) + item.demanda;
-                return acc;
-            }, {});
-
-            // Agregação por Revenda
-            const revendaMap = processedData.reduce((acc, item) => {
-                acc[item.revenda] = acc[item.revenda] || { revenda: item.revenda };
-                METRICS.forEach(m => acc[item.revenda][m.key] = (acc[item.revenda][m.key] || 0) + item[m.key]);
-                acc[item.revenda].demanda = (acc[item.revenda].demanda || 0) + item.demanda;
-                return acc;
-            }, {});
-            const revendaTotals = Object.values(revendaMap).sort((a, b) => a.revenda - b.revenda);
-
-            // Categorias Únicas
-            const categories = [...new Set(data.map(item => item.category))].sort();
-
-            // Itens sugeridos
-            const suggestedItems = processedData.filter(item => item.suggestion > 0);
-
-            return { processedData, globalTotals, revendaTotals, categories, suggestedItems };
-        }
-
-        function filterAndSortItems(processedData) {
-            let filteredItems = processedData;
-
-            // Filtro por Categoria
-            if (selectedCategory !== 'All') {
-                filteredItems = filteredItems.filter(item => item.category === selectedCategory);
-            }
-
-            // Filtro por termo de busca (SKU ou Descrição)
-            if (searchTerm) {
-                const lowerCaseSearch = searchTerm.toLowerCase();
-                filteredItems = filteredItems.filter(item =>
-                    item.sku.toLowerCase().includes(lowerCaseSearch) ||
-                    item.desc.toLowerCase().includes(lowerCaseSearch)
-                );
-            }
-
-            // Filtro de Sugestão (apenas para a aba de detalhes, se ativo)
-            if (activeTab === 'details' && showSuggestionsOnly) {
-                filteredItems = filteredItems.filter(item => item.is_low_stock);
-            }
-
-            return filteredItems;
-        }
-
-        // --- Renderização de Componentes HTML ---
+        // --- Funções de Renderização (Reorganizadas para correção de erro) ---
 
         function renderGlobalTotals(totals) {
             let html = '';
@@ -193,7 +165,105 @@
                 </div>
             `;
         }
+        
+        function renderPendingOrders(ordersData) {
+            const tbodyContent = ordersData.map(order => {
+                const statusColor = order.status === 'Em Trânsito' ? 'bg-blue-100 text-blue-700' : 
+                                    order.status === 'Aguardando Faturamento' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700';
 
+                return `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 whitespace-nowrap text-sm font-bold text-gray-900">${order.sku}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${order.desc}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-800 text-center">${formatNumber(order.qtd_pedida)}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${order.fornecedor}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}">
+                                ${order.status}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${order.previsao}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            return `
+                <div class="p-6 rounded-xl shadow-lg mb-8 border-t-2 border-purple-500 bg-white">
+                    <h3 class="text-xl font-bold text-purple-700 mb-3">
+                        Pedidos de Compra Ativos (${ordersData.length})
+                    </h3>
+                    <p class="text-sm text-gray-600">
+                        Acompanhamento dos itens já solicitados a fornecedores.
+                    </p>
+                </div>
+                <div class="overflow-x-auto bg-white rounded-xl shadow-lg mt-4">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descrição</th>
+                                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Qtd. Pedida</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fornecedor</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Previsão</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            ${tbodyContent}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function renderTransferSuggestions(transfers) {
+            const tbodyContent = transfers.map(t => `
+                <tr class="bg-green-50 hover:bg-green-100">
+                    <td class="px-4 py-3 whitespace-nowrap text-sm font-bold text-gray-900">
+                        <div class="font-bold">${t.sku}</div>
+                        <div class="text-gray-500 text-xs truncate max-w-xs">${t.desc}</div>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-700 text-center">${t.category}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-700 text-center">${t.curve}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm font-extrabold text-green-700 text-center">Revenda ${t.fromRevenda}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm font-extrabold text-red-700 text-center">Revenda ${t.toRevenda}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm font-extrabold text-red-600 text-center">${formatNumber(t.transferQty)}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-green-700 text-center">${t.surplusCoverage}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-red-700 text-center">${t.deficitCoverage}</td>
+                </tr>
+            `).join('');
+
+            return `
+                <div class="p-6 rounded-xl shadow-lg mb-8 border-t-2 border-green-500 bg-white">
+                    <h3 class="text-xl font-bold text-green-700 mb-3">
+                        Sugestões de Transferência Interna (${transfers.length})
+                    </h3>
+                    <p class="text-sm text-gray-600">
+                        **Critério:** Mover estoque de revendas com excesso (> 3 meses) para revendas com risco de falta (< 1 mês) para itens de Curva Alta/Média (A/B).
+                    </p>
+                </div>
+                <div class="overflow-x-auto bg-white rounded-xl shadow-lg mt-4">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU / Descrição</th>
+                                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Cat.</th>
+                                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Curva</th>
+                                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">De (Surplus)</th>
+                                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Para (Deficit)</th>
+                                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Qtd. a Transferir</th>
+                                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Cobertura Surplus</th>
+                                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Cobertura Deficit</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            ${tbodyContent}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+        
         function renderItemTable(data, containerId, showSuggestions = false) {
             const tableData = showSuggestions ? data.filter(item => item.suggestion) : data;
 
@@ -215,7 +285,7 @@
                         `).join('')}
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-center text-gray-700">${formatDecimal(item.demanda)}</td>
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-center text-gray-700">
-                            ${calculateCoverage(item.qtd_disp, item.demanda)}
+                            ${formatCoverage(calculateCoverage(item.qtd_disp, item.demanda))}
                         </td>
                         ${showSuggestions ? `
                             <td class="px-4 py-3 whitespace-nowrap text-sm text-center font-extrabold text-red-600">
@@ -252,10 +322,145 @@
         }
 
 
+        // --- Lógica de Processamento ---
+
+        function calculateTransfers(processedData) {
+            const transferSuggestions = [];
+            const itemsBySku = processedData.reduce((acc, item) => {
+                acc[item.sku] = acc[item.sku] || [];
+                // Adiciona a cobertura formatada para facilitar a ordenação e a exibição
+                acc[item.sku].push({ 
+                    ...item, 
+                    coverageValue: calculateCoverage(item.qtd_disp, item.demanda) 
+                });
+                return acc;
+            }, {});
+
+            for (const sku in itemsBySku) {
+                const locations = itemsBySku[sku];
+                if (locations.length < 2) continue; // Precisa de pelo menos duas revendas para transferência
+
+                // Ordenar por Cobertura: Menor cobertura = Risco (Deficit), Maior cobertura = Excesso (Surplus)
+                locations.sort((a, b) => a.coverageValue - b.coverageValue);
+
+                const deficitItem = locations[0];
+                const surplusItem = locations[locations.length - 1];
+
+                // Regras de Transferência:
+                // 1. Deficit: Cobertura de risco (abaixo de 1.0 mês) E demanda > 0
+                // 2. Surplus: Cobertura de excesso (acima de 3.0 meses) E tem estoque disponível
+                
+                const isDeficit = deficitItem.coverageValue < 1.0 && deficitItem.demanda > 0;
+                const isSurplus = surplusItem.coverageValue > 3.0 && surplusItem.qtd_disp > 0;
+
+                if (isDeficit && isSurplus) {
+                    // Cálculo da Quantidade: Transferir o necessário para o deficit atingir 2 meses
+                    const targetCoverage = 2.0; 
+                    const neededQty = Math.ceil((deficitItem.demanda * targetCoverage) - deficitItem.qtd_disp);
+                    
+                    if (neededQty > 0) {
+                        const transferQty = Math.min(neededQty, surplusItem.qtd_disp);
+                        
+                        // Não sugerir se a transferência não for significativa (ex: < 5 unidades)
+                        if (transferQty >= 5) { 
+                             transferSuggestions.push({
+                                sku: sku,
+                                desc: deficitItem.desc,
+                                category: deficitItem.category,
+                                curve: deficitItem.curve,
+                                fromRevenda: surplusItem.revenda,
+                                toRevenda: deficitItem.revenda,
+                                transferQty: transferQty,
+                                deficitCoverage: formatCoverage(deficitItem.coverageValue),
+                                surplusCoverage: formatCoverage(surplusItem.coverageValue),
+                            });
+                        }
+                    }
+                }
+            }
+
+            // Priorizar transferências por Curva (A > B > C)
+            transferSuggestions.sort((a, b) => {
+                const curveOrder = { 'A-1': 1, 'A-2': 2, 'A-3': 3, 'B-1': 4, 'B-2': 5, 'B-3': 6, 'C-1': 7, 'C-2': 8, 'C-3': 9 };
+                return curveOrder[a.curve] - curveOrder[b.curve];
+            });
+
+            return transferSuggestions;
+        }
+
+        function processData(data) {
+            const processedData = data.map(item => {
+                // Lógica de Sugestão de Compra (Externa)
+                const safetyStockThreshold = item.demanda * 1.5; 
+                const needsPurchase = item.demanda > 0 && item.qtd_disp < safetyStockThreshold;
+                
+                let suggestion = 0;
+                if (needsPurchase) {
+                    const targetCoverage = 2.0; 
+                    suggestion = Math.ceil((item.demanda * targetCoverage) - item.qtd_disp);
+                    if (suggestion < 0) suggestion = 0; 
+                }
+                
+                return {
+                    ...item,
+                    is_low_stock: needsPurchase,
+                    suggestion: suggestion > 0 ? suggestion : null,
+                };
+            });
+
+            // Agregações (Totais Globais e Revendas)
+            const globalTotals = processedData.reduce((acc, item) => {
+                METRICS.forEach(m => acc[m.key] = (acc[m.key] || 0) + item[m.key]);
+                acc.demanda = (acc.demanda || 0) + item.demanda;
+                return acc;
+            }, {});
+
+            const revendaMap = processedData.reduce((acc, item) => {
+                acc[item.revenda] = acc[item.revenda] || { revenda: item.revenda };
+                METRICS.forEach(m => acc[item.revenda][m.key] = (acc[item.revenda][m.key] || 0) + item[m.key]);
+                acc[item.revenda].demanda = (acc[item.revenda].demanda || 0) + item.demanda;
+                return acc;
+            }, {});
+            const revendaTotals = Object.values(revendaMap).sort((a, b) => a.revenda - b.revenda);
+
+            // Categorias Únicas
+            const categories = [...new Set(data.map(item => item.category))].sort();
+
+            // Sugestões de Compra (Externa)
+            const suggestedItems = processedData.filter(item => item.suggestion > 0);
+
+            // Sugestões de Transferência (Interna)
+            const transferSuggestions = calculateTransfers(processedData);
+
+            return { processedData, globalTotals, revendaTotals, categories, suggestedItems, transferSuggestions };
+        }
+
+        function filterAndSortItems(processedData) {
+            let filteredItems = processedData;
+
+            if (selectedCategory !== 'All') {
+                filteredItems = filteredItems.filter(item => item.category === selectedCategory);
+            }
+
+            if (searchTerm) {
+                const lowerCaseSearch = searchTerm.toLowerCase();
+                filteredItems = filteredItems.filter(item =>
+                    item.sku.toLowerCase().includes(lowerCaseSearch) ||
+                    item.desc.toLowerCase().includes(lowerCaseSearch)
+                );
+            }
+
+            if (activeTab === 'details' && showSuggestionsOnly) {
+                filteredItems = filteredItems.filter(item => item.is_low_stock);
+            }
+
+            return filteredItems;
+        }
+
         // --- Função Principal de Renderização ---
 
         function renderApp() {
-            const { processedData, globalTotals, revendaTotals, categories, suggestedItems } = processData(currentStockData);
+            const { processedData, globalTotals, revendaTotals, categories, suggestedItems, transferSuggestions } = processData(currentStockData);
             const filteredItems = filterAndSortItems(processedData);
 
             let appContent = `
@@ -270,16 +475,26 @@
                 <div id="global-totals"></div>
 
                 <!-- 2. Abas de Visualização -->
-                <div class="flex space-x-2 border-b border-gray-200 mb-6">
+                <div class="flex space-x-2 border-b border-gray-200 mb-6 overflow-x-auto pb-1">
                     <button id="tab-details" onclick="setActiveTab('details')" 
-                        class="px-4 py-2 text-sm font-medium rounded-t-lg transition duration-150 
+                        class="px-4 py-2 text-sm font-medium rounded-t-lg transition duration-150 whitespace-nowrap
                         ${activeTab === 'details' ? 'bg-white border-t border-x border-gray-200 text-indigo-700' : 'text-gray-500 hover:bg-gray-100'}">
                         Detalhes do Item e Revendas
                     </button>
                     <button id="tab-suggestions" onclick="setActiveTab('suggestions')" 
-                        class="px-4 py-2 text-sm font-medium rounded-t-lg transition duration-150 
+                        class="px-4 py-2 text-sm font-medium rounded-t-lg transition duration-150 whitespace-nowrap
                         ${activeTab === 'suggestions' ? 'bg-white border-t border-x border-gray-200 text-red-700' : 'text-gray-500 hover:bg-gray-100'}">
                         Sugestão de Compras (${suggestedItems.length})
+                    </button>
+                    <button id="tab-transfers" onclick="setActiveTab('transfers')" 
+                        class="px-4 py-2 text-sm font-medium rounded-t-lg transition duration-150 whitespace-nowrap
+                        ${activeTab === 'transfers' ? 'bg-white border-t border-x border-gray-200 text-green-700' : 'text-gray-500 hover:bg-gray-100'}">
+                        Sugestão de Transferências (${transferSuggestions.length})
+                    </button>
+                    <button id="tab-orders" onclick="setActiveTab('orders')" 
+                        class="px-4 py-2 text-sm font-medium rounded-t-lg transition duration-150 whitespace-nowrap
+                        ${activeTab === 'orders' ? 'bg-white border-t border-x border-gray-200 text-purple-700' : 'text-gray-500 hover:bg-gray-100'}">
+                        Pedidos em Andamento (${currentPendingOrders.length})
                     </button>
                 </div>
 
@@ -290,7 +505,7 @@
                 <div id="revenda-totals-container" class="mt-12"></div>
 
                 <footer class="mt-12 text-center text-sm text-gray-500">
-                    Sistema de Gestão de Estoque - Solução Gratuita (HTML).
+                    Sistema de Gestão de Estoque - Solução Gratuita (HTML) com persistência local.
                 </footer>
             `;
 
@@ -299,16 +514,17 @@
             // Renderiza o conteúdo principal
             renderGlobalTotals(globalTotals);
             renderRevendaTotals(revendaTotals);
-            renderTabContent(filteredItems, suggestedItems, categories);
+            renderTabContent(filteredItems, suggestedItems, transferSuggestions, categories);
             
-            // Re-bind listeners para inputs
+            // Re-bind listeners para inputs e botões
             document.getElementById('search-input')?.addEventListener('input', handleSearchChange);
             document.getElementById('category-select')?.addEventListener('change', handleCategoryChange);
             document.getElementById('suggestions-toggle')?.addEventListener('change', handleToggleChange);
-            document.getElementById('update-button')?.addEventListener('click', handleUpdateClick);
+            document.getElementById('update-stock-button')?.addEventListener('click', handleUpdateStockClick);
+            document.getElementById('update-orders-button')?.addEventListener('click', handleUpdateOrdersClick);
         }
 
-        function renderTabContent(filteredItems, suggestedItems, categories) {
+        function renderTabContent(filteredItems, suggestedItems, transferSuggestions, categories) {
             const tabContentDiv = document.getElementById('tab-content');
             
             if (activeTab === 'details') {
@@ -350,21 +566,21 @@
                     </div>
 
                     <!-- Componente de Atualização Manual -->
-                    <div id="data-updater-container"></div>
+                    <div id="data-updater-stock-container"></div>
                     
                     <!-- Tabela de Itens Detalhada -->
                     <h3 class="text-xl font-bold text-gray-800 mb-3 mt-8">Itens (${filteredItems.length})</h3>
                     <div id="item-table-details"></div>
                 `;
                 
-                renderDataUpdater(currentStockData);
+                renderDataUpdaterStock(currentStockData);
                 renderItemTable(filteredItems, 'item-table-details', false);
 
             } else if (activeTab === 'suggestions') {
                 tabContentDiv.innerHTML = `
                     <div class="p-6 rounded-xl shadow-lg mb-8 border-t-2 border-red-500 bg-white">
                         <h3 class="text-xl font-bold text-red-700 mb-3">
-                            Itens Prioritários para Compra - Abastecer Agora (${suggestedItems.length})
+                            Itens Prioritários para Compra Externa - Abastecer Agora (${suggestedItems.length})
                         </h3>
                         <p class="text-sm text-gray-600">
                             **Critério:** Estoque Disponível é menor que 1.5 meses da Demanda Média. A sugestão é comprar o suficiente para atingir 2 meses de cobertura.
@@ -373,33 +589,67 @@
                     <div id="item-table-suggestions"></div>
                 `;
                 renderItemTable(suggestedItems, 'item-table-suggestions', true);
+
+            } else if (activeTab === 'transfers') {
+                tabContentDiv.innerHTML = `
+                    <div id="transfer-table-container"></div>
+                `;
+                document.getElementById('transfer-table-container').innerHTML = renderTransferSuggestions(transferSuggestions);
+            
+            } else if (activeTab === 'orders') {
+                tabContentDiv.innerHTML = `
+                    <div id="pending-orders-table-container"></div>
+                    <div id="data-updater-orders-container"></div>
+                `;
+                document.getElementById('pending-orders-table-container').innerHTML = renderPendingOrders(currentPendingOrders);
+                renderDataUpdaterOrders(currentPendingOrders);
             }
         }
-
-        function renderDataUpdater(initialData) {
-            const container = document.getElementById('data-updater-container');
+        
+        // Novo: Updater para Estoque
+        function renderDataUpdaterStock(initialData) {
+            const container = document.getElementById('data-updater-stock-container');
             const defaultJson = JSON.stringify(initialData, null, 2);
             
             container.innerHTML = `
                 <div class="mt-8 p-6 bg-yellow-50 rounded-xl shadow-lg border-t-2 border-yellow-500">
                     <h3 class="text-xl font-bold text-yellow-800 mb-3">
-                        Atualização Manual de Estoque (JSON)
+                        Atualização Manual de ESTOQUE (JSON)
                     </h3>
                     <p class="text-sm text-gray-700 mb-4">
-                        1. Exporte os dados atuais do seu sistema para CSV.<br>
-                        2. Converta o CSV para um array JSON no formato correto (o formato de exemplo está na caixa abaixo).<br>
-                        3. Cole o JSON atualizado e clique em "Atualizar Estoque".
+                        Cole o array JSON do seu estoque (incluindo as colunas de curva - ex: "curve": "A-1") e clique em Atualizar.
                     </p>
-                    <textarea id="json-input" rows="10" class="w-full p-2 border border-yellow-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500 text-xs font-mono">${defaultJson}</textarea>
-                    <p id="json-error" class="text-sm text-red-600 mt-2 font-semibold"></p>
-                    <button id="update-button" class="mt-3 w-full px-4 py-2 bg-yellow-600 text-white font-semibold rounded-lg shadow-md hover:bg-yellow-700 transition duration-150">
-                        Atualizar Estoque
+                    <textarea id="json-input-stock" rows="10" class="w-full p-2 border border-yellow-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500 text-xs font-mono">${defaultJson}</textarea>
+                    <p id="json-error-stock" class="text-sm text-red-600 mt-2 font-semibold"></p>
+                    <button id="update-stock-button" class="mt-3 w-full px-4 py-2 bg-yellow-600 text-white font-semibold rounded-lg shadow-md hover:bg-yellow-700 transition duration-150">
+                        Atualizar ESTOQUE e Salvar no Navegador
                     </button>
                 </div>
             `;
+            document.getElementById('update-stock-button').addEventListener('click', handleUpdateStockClick);
+        }
+
+        // Novo: Updater para Pedidos
+        function renderDataUpdaterOrders(initialData) {
+            const container = document.getElementById('data-updater-orders-container');
+            const defaultJson = JSON.stringify(initialData, null, 2);
             
-            // Inicializa o listener do botão de atualização
-            document.getElementById('update-button').addEventListener('click', handleUpdateClick);
+            container.innerHTML = `
+                <div class="mt-8 p-6 bg-yellow-50 rounded-xl shadow-lg border-t-2 border-purple-500">
+                    <h3 class="text-xl font-bold text-purple-800 mb-3">
+                        Atualização Manual de PEDIDOS EM ANDAMENTO (JSON)
+                    </h3>
+                    <p class="text-sm text-gray-700 mb-4">
+                        Cole o array JSON dos seus pedidos (SKU, Qtd., Fornecedor, Status, Previsão) e clique em Atualizar.
+                    </p>
+                    <textarea id="json-input-orders" rows="10" class="w-full p-2 border border-yellow-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 text-xs font-mono">${defaultJson}</textarea>
+                    <p id="json-error-orders" class="text-sm text-red-600 mt-2 font-semibold"></p>
+                    <button id="update-orders-button" class="mt-3 w-full px-4 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 transition duration-150">
+                        Atualizar PEDIDOS e Salvar no Navegador
+                    </button>
+                </div>
+            `;
+            document.getElementById('update-orders-button').addEventListener('click', handleUpdateOrdersClick);
         }
 
         // --- Handlers de Eventos ---
@@ -424,26 +674,52 @@
             renderApp();
         }
 
-        function handleUpdateClick() {
-            const jsonInput = document.getElementById('json-input').value;
-            const errorElement = document.getElementById('json-error');
+        function handleUpdateStockClick() {
+            const jsonInput = document.getElementById('json-input-stock').value;
+            const errorElement = document.getElementById('json-error-stock');
             errorElement.textContent = '';
 
             try {
                 const newStockData = JSON.parse(jsonInput);
-                if (!Array.isArray(newStockData) || newStockData.length === 0 || !newStockData[0].sku) {
-                    throw new Error("O formato JSON deve ser um array não vazio de objetos com a chave 'sku'.");
+                if (!Array.isArray(newStockData) || newStockData.length === 0 || !newStockData[0].sku || !newStockData[0].curve) {
+                    throw new Error("O JSON deve ser um array com as chaves 'sku' e 'curve'.");
                 }
                 
-                // Sucesso: Atualiza o estado global
                 currentStockData = newStockData;
+                saveStockData(currentStockData, currentPendingOrders); // Salva o estoque e os pedidos
                 renderApp();
 
-                // Mensagem de sucesso temporária
-                errorElement.textContent = "Estoque atualizado com sucesso!";
+                errorElement.textContent = "Estoque atualizado e salvo no seu navegador!";
                 errorElement.classList.remove('text-red-600');
                 errorElement.classList.add('text-green-600');
-                setTimeout(() => errorElement.textContent = '', 3000);
+                setTimeout(() => errorElement.textContent = '', 5000);
+                
+            } catch (e) {
+                errorElement.textContent = `Erro ao processar JSON: ${e.message}. Verifique a sintaxe.`;
+                errorElement.classList.remove('text-green-600');
+                errorElement.classList.add('text-red-600');
+            }
+        }
+        
+        function handleUpdateOrdersClick() {
+            const jsonInput = document.getElementById('json-input-orders').value;
+            const errorElement = document.getElementById('json-error-orders');
+            errorElement.textContent = '';
+
+            try {
+                const newOrdersData = JSON.parse(jsonInput);
+                if (!Array.isArray(newOrdersData)) {
+                    throw new Error("O JSON deve ser um array de objetos de pedidos.");
+                }
+                
+                currentPendingOrders = newOrdersData;
+                saveStockData(currentStockData, currentPendingOrders); // Salva os pedidos e o estoque
+                renderApp();
+
+                errorElement.textContent = "Pedidos atualizados e salvos no seu navegador!";
+                errorElement.classList.remove('text-red-600');
+                errorElement.classList.add('text-green-600');
+                setTimeout(() => errorElement.textContent = '', 5000);
                 
             } catch (e) {
                 errorElement.textContent = `Erro ao processar JSON: ${e.message}. Verifique a sintaxe.`;
@@ -452,8 +728,147 @@
             }
         }
 
+        // --- Lógica de Processamento ---
+
+        function calculateTransfers(processedData) {
+            const transferSuggestions = [];
+            const itemsBySku = processedData.reduce((acc, item) => {
+                acc[item.sku] = acc[item.sku] || [];
+                // Adiciona a cobertura formatada para facilitar a ordenação e a exibição
+                acc[item.sku].push({ 
+                    ...item, 
+                    coverageValue: calculateCoverage(item.qtd_disp, item.demanda) 
+                });
+                return acc;
+            }, {});
+
+            for (const sku in itemsBySku) {
+                const locations = itemsBySku[sku];
+                if (locations.length < 2) continue; // Precisa de pelo menos duas revendas para transferência
+
+                // Ordenar por Cobertura: Menor cobertura = Risco (Deficit), Maior cobertura = Excesso (Surplus)
+                locations.sort((a, b) => a.coverageValue - b.coverageValue);
+
+                const deficitItem = locations[0];
+                const surplusItem = locations[locations.length - 1];
+
+                // Regras de Transferência:
+                // 1. Deficit: Cobertura de risco (abaixo de 1.0 mês) E demanda > 0
+                // 2. Surplus: Cobertura de excesso (acima de 3.0 meses) E tem estoque disponível
+                
+                const isDeficit = deficitItem.coverageValue < 1.0 && deficitItem.demanda > 0;
+                const isSurplus = surplusItem.coverageValue > 3.0 && surplusItem.qtd_disp > 0;
+
+                if (isDeficit && isSurplus) {
+                    // Cálculo da Quantidade: Transferir o necessário para o deficit atingir 2 meses
+                    const targetCoverage = 2.0; 
+                    const neededQty = Math.ceil((deficitItem.demanda * targetCoverage) - deficitItem.qtd_disp);
+                    
+                    if (neededQty > 0) {
+                        const transferQty = Math.min(neededQty, surplusItem.qtd_disp);
+                        
+                        // Não sugerir se a transferência não for significativa (ex: < 5 unidades)
+                        if (transferQty >= 5) { 
+                             transferSuggestions.push({
+                                sku: sku,
+                                desc: deficitItem.desc,
+                                category: deficitItem.category,
+                                curve: deficitItem.curve,
+                                fromRevenda: surplusItem.revenda,
+                                toRevenda: deficitItem.revenda,
+                                transferQty: transferQty,
+                                deficitCoverage: formatCoverage(deficitItem.coverageValue),
+                                surplusCoverage: formatCoverage(surplusItem.coverageValue),
+                            });
+                        }
+                    }
+                }
+            }
+
+            // Priorizar transferências por Curva (A > B > C)
+            transferSuggestions.sort((a, b) => {
+                const curveOrder = { 'A-1': 1, 'A-2': 2, 'A-3': 3, 'B-1': 4, 'B-2': 5, 'B-3': 6, 'C-1': 7, 'C-2': 8, 'C-3': 9 };
+                return curveOrder[a.curve] - curveOrder[b.curve];
+            });
+
+            return transferSuggestions;
+        }
+
+        function processData(data) {
+            const processedData = data.map(item => {
+                // Lógica de Sugestão de Compra (Externa)
+                const safetyStockThreshold = item.demanda * 1.5; 
+                const needsPurchase = item.demanda > 0 && item.qtd_disp < safetyStockThreshold;
+                
+                let suggestion = 0;
+                if (needsPurchase) {
+                    const targetCoverage = 2.0; 
+                    suggestion = Math.ceil((item.demanda * targetCoverage) - item.qtd_disp);
+                    if (suggestion < 0) suggestion = 0; 
+                }
+                
+                return {
+                    ...item,
+                    is_low_stock: needsPurchase,
+                    suggestion: suggestion > 0 ? suggestion : null,
+                };
+            });
+
+            // Agregações (Totais Globais e Revendas)
+            const globalTotals = processedData.reduce((acc, item) => {
+                METRICS.forEach(m => acc[m.key] = (acc[m.key] || 0) + item[m.key]);
+                acc.demanda = (acc.demanda || 0) + item.demanda;
+                return acc;
+            }, {});
+
+            const revendaMap = processedData.reduce((acc, item) => {
+                acc[item.revenda] = acc[item.revenda] || { revenda: item.revenda };
+                METRICS.forEach(m => acc[item.revenda][m.key] = (acc[item.revenda][m.key] || 0) + item[m.key]);
+                acc[item.revenda].demanda = (acc[item.revenda].demanda || 0) + item.demanda;
+                return acc;
+            }, {});
+            const revendaTotals = Object.values(revendaMap).sort((a, b) => a.revenda - b.revenda);
+
+            // Categorias Únicas
+            const categories = [...new Set(data.map(item => item.category))].sort();
+
+            // Sugestões de Compra (Externa)
+            const suggestedItems = processedData.filter(item => item.suggestion > 0);
+
+            // Sugestões de Transferência (Interna)
+            const transferSuggestions = calculateTransfers(processedData);
+
+            return { processedData, globalTotals, revendaTotals, categories, suggestedItems, transferSuggestions };
+        }
+
+        function filterAndSortItems(processedData) {
+            let filteredItems = processedData;
+
+            if (selectedCategory !== 'All') {
+                filteredItems = filteredItems.filter(item => item.category === selectedCategory);
+            }
+
+            if (searchTerm) {
+                const lowerCaseSearch = searchTerm.toLowerCase();
+                filteredItems = filteredItems.filter(item =>
+                    item.sku.toLowerCase().includes(lowerCaseSearch) ||
+                    item.desc.toLowerCase().includes(lowerCaseSearch)
+                );
+            }
+
+            if (activeTab === 'details' && showSuggestionsOnly) {
+                filteredItems = filteredItems.filter(item => item.is_low_stock);
+            }
+
+            return filteredItems;
+        }
+
+
         // --- Inicialização ---
-        window.onload = renderApp;
+        window.onload = function() {
+            loadStockData(); // Carrega estoque e pedidos
+            renderApp();
+        };
     </script>
 </body>
 </html>
